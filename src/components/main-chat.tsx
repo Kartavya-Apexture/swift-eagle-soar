@@ -114,7 +114,7 @@ export function MainChat({
     <div className="flex-1 flex flex-col min-h-0">
       <ScrollArea className="flex-1">
         <div className="px-4 py-8">
-          <div className="max-w-4xl mx-auto flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             {messages.map((message) => {
               if (message.type === "system") {
                 if (messages.indexOf(message) === 0) return null
@@ -195,7 +195,7 @@ export function MainChat({
       </ScrollArea>
 
       <div className="w-full p-4 border-t bg-background">
-        <div className="max-w-4xl mx-auto">
+        <div className="">
           <div className="w-full rounded-xl border bg-background shadow-sm p-2 flex flex-col">
             <TextareaAutosize
               rows={1}
