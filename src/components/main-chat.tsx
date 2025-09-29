@@ -112,6 +112,9 @@ export function MainChat({
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
+      <div className="p-4 border-b">
+        <h2 className="text-lg font-semibold">Conversation</h2>
+      </div>
       <ScrollArea className="flex-1">
         <div className="px-4 py-8">
           <div className="flex flex-col gap-6">
@@ -153,7 +156,7 @@ export function MainChat({
                   )}
                   <div
                     className={cn(
-                      "p-3 rounded-lg max-w-md lg:max-w-xl shadow-sm",
+                      "p-3 rounded-lg max-w-2xl shadow-sm",
                       isUser
                         ? "bg-primary text-primary-foreground rounded-br-none"
                         : "bg-card border rounded-bl-none"
@@ -195,39 +198,37 @@ export function MainChat({
       </ScrollArea>
 
       <div className="w-full p-4 border-t bg-background">
-        <div className="">
-          <div className="w-full rounded-xl border bg-background shadow-sm p-2 flex flex-col">
-            <TextareaAutosize
-              rows={1}
-              placeholder="Ask anything..."
-              className="w-full resize-none bg-transparent px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
+        <div className="w-full rounded-xl border bg-background shadow-sm p-2 flex flex-col">
+          <TextareaAutosize
+            rows={1}
+            placeholder="Ask anything..."
+            className="w-full resize-none bg-transparent px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isThinking}
+            minRows={1}
+            maxRows={5}
+          />
+          <div className="flex items-center justify-between mt-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
               disabled={isThinking}
-              minRows={1}
-              maxRows={5}
-            />
-            <div className="flex items-center justify-between mt-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full"
-                disabled={isThinking}
-              >
-                <Paperclip className="h-5 w-5 text-muted-foreground" />
-              </Button>
-              <Button
-                type="submit"
-                size="icon"
-                className="h-9 w-9 rounded-full"
-                onClick={handleSend}
-                disabled={!input.trim() || isThinking}
-              >
-                <ArrowUp className="h-5 w-5" />
-                <span className="sr-only">Send message</span>
-              </Button>
-            </div>
+            >
+              <Paperclip className="h-5 w-5 text-muted-foreground" />
+            </Button>
+            <Button
+              type="submit"
+              size="icon"
+              className="h-9 w-9 rounded-full"
+              onClick={handleSend}
+              disabled={!input.trim() || isThinking}
+            >
+              <ArrowUp className="h-5 w-5" />
+              <span className="sr-only">Send message</span>
+            </Button>
           </div>
         </div>
       </div>

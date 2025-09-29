@@ -119,24 +119,19 @@ export default function Home() {
     <div className="bg-muted/40 flex justify-center">
       <div className="flex w-full max-w-[1440px] bg-background shadow-lg h-screen">
         <Sidebar />
-        <main className="flex-1 flex flex-col border-x">
-          {showBrowser && (
-            <div className="h-1/2 border-b">
-              <LiveBrowser />
-            </div>
-          )}
-          <div
-            className={cn(
-              "flex flex-col",
-              showBrowser ? "h-1/2" : "h-full"
-            )}
-          >
+        <main className="flex-1 flex flex-row border-x">
+          <div className="flex-1 flex flex-col">
             <MainChat
               messages={messages}
               onSendMessage={sendMessage}
               isThinking={isThinking}
             />
           </div>
+          {showBrowser && (
+            <div className="w-2/5 max-w-md border-l">
+              <LiveBrowser />
+            </div>
+          )}
         </main>
       </div>
     </div>
