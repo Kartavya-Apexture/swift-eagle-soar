@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowUp, User, Bot, Terminal, Paperclip } from "lucide-react"
+import { ArrowUp, User, Bot, Terminal, Paperclip, Sparkles } from "lucide-react"
 import { type Message } from "@/types"
 import { cn } from "@/lib/utils"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -14,86 +14,6 @@ interface MainChatProps {
   messages: Message[]
   onSendMessage: (content: string) => void
   isThinking: boolean
-}
-
-const AgentMessageContent = ({ content }: { content: string }) => {
-  const parts = content.split(/(".*?")/g).filter(Boolean)
-
-  return (
-    <p className="text-sm whitespace-pre-wrap">
-      {parts.map((part, i) =>
-        part.startsWith('"') && part.endsWith('"') ? (
-          <span
-            key={i}
-            className="block bg-background/50 border-l-2 border-primary pl-2 py-1 my-2 italic"
-          >
-            {part.slice(1, -1)}
-          </span>
-        ) : (
-          <span key={i}>{part}</span>
-        )
-      )}
-    </p>
-  )
-}
-
-const AgentMessageBlock = ({ messages: blockMessages }: { messages: Message[] }) => {
-  return (
-    <div className="flex items-start gap-3">
-      <Avatar className="h-8 w-8">
-        <AvatarFallback>
-          <Bot className="h-5 w-5" />
-        </AvatarFallback>
-      </Avatar>
-      <div className="flex flex-col gap-2 w-full max-w-md">
-        {(() => {
-          const blockElements = []
-          let k = 0
-          while (k < blockMessages.length) {
-            const msg = blockMessages[k]
-            if (msg.type === "agent") {
-              blockElements.push(
-                <div key={msg.id} className="p-3 rounded-xl bg-muted">
-                  <AgentMessageContent content={msg.content} />
-                </div>
-              )
-              k++
-            } else if (msg.type === "system") {
-              const systemGroup = []
-              let l = k
-              while (l < blockMessages.length && blockMessages[l].type === "system") {
-                systemGroup.push(blockMessages[l])
-                l++
-              }
-              blockElements.push(
-                <div key={msg.id} className="my-2 p-3 border rounded-lg bg-background/50">
-                  <div className="flex items-center gap-2 text-sm font-semibold mb-2 text-muted-foreground">
-                    <Terminal className="h-4 w-4" />
-                    <span>Agent Actions</span>
-                  </div>
-                  <div className="pl-2 space-y-1 border-l">
-                    {systemGroup.map((sysMsg) => (
-                      <div
-                        key={sysMsg.id}
-                        className="flex items-center gap-2 text-xs font-mono text-muted-foreground"
-                      >
-                        <span>{sysMsg.content}</span>
-                        <span className="italic">({sysMsg.timestamp})</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-              k = l
-            } else {
-              k++
-            }
-          }
-          return blockElements
-        })()}
-      </div>
-    </div>
-  )
 }
 
 export function MainChat({
@@ -127,6 +47,37 @@ export function MainChat({
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  const renderMessageContent = (message: Message) => {
+    if (message.type === "system" && messages.indexOf(message) === 0) {
+      return null
+    }
+
+    switch (message.type) {
+      case "user":
+        return (
+          <div className="p-3 rounded-xl max-w-md bg-primary text-primary-foreground">
+            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          </div>
+        )
+      case "agent":
+        return (
+          <div className="p-3 rounded-xl max-w-md bg-muted">
+            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          </div>
+        )
+      case "system":
+        return (
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-2">
+            <Terminal className="h-4 w-4" />
+            <span>{message.content}</span>
+            <span className="italic">({message.timestamp})</span>
+          </div>
+        )
+      default:
+        return null
     }
   }
 
@@ -191,55 +142,37 @@ export function MainChat({
     )
   }
 
-  const renderMessages = () => {
-    const renderedElements = []
-    let i = 0
-    while (i < messages.length) {
-      const message = messages[i]
-
-      if (i === 0 && message.type === "system") {
-        i++
-        continue
-      }
-
-      if (message.type === "user") {
-        renderedElements.push(
-          <div key={message.id} className="flex items-start gap-3 justify-end">
-            <div className="p-3 rounded-xl max-w-md bg-primary text-primary-foreground">
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-            </div>
-            <Avatar className="h-8 w-8">
-              <AvatarFallback>
-                <User className="h-5 w-5" />
-              </AvatarFallback>
-            </Avatar>
-          </div>
-        )
-        i++
-      } else if (message.type === "agent" || message.type === "system") {
-        const agentBlockMessages = []
-        let j = i
-        while (j < messages.length && messages[j].type !== "user") {
-          agentBlockMessages.push(messages[j])
-          j++
-        }
-        renderedElements.push(
-          <AgentMessageBlock key={message.id} messages={agentBlockMessages} />
-        )
-        i = j
-      } else {
-        i++
-      }
-    }
-    return renderedElements
-  }
-
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <ScrollArea className="flex-1">
         <div className="h-full flex flex-col justify-end px-4">
           <div className="flex flex-col gap-4 py-8">
-            {renderMessages()}
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={cn(
+                  "flex items-start gap-3",
+                  message.type === "user" && "justify-end",
+                  message.type === "system" && "justify-center"
+                )}
+              >
+                {message.type === "agent" && (
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>
+                      <Bot className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+                {renderMessageContent(message)}
+                {message.type === "user" && (
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>
+                      <User className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            ))}
             {isThinking && (
               <div className="flex items-start gap-3">
                 <Avatar className="h-8 w-8">
