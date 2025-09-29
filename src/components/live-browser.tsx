@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { Lock } from "lucide-react"
 
 export function LiveBrowser() {
   return (
@@ -25,6 +26,14 @@ export function LiveBrowser() {
             <div className="w-3 h-3 rounded-full bg-red-500/90"></div>
             <div className="w-3 h-3 rounded-full bg-yellow-500/90"></div>
             <div className="w-3 h-3 rounded-full bg-green-500/90"></div>
+          </div>
+          <div className="w-full h-10 bg-muted/50 flex-shrink-0 flex items-center px-3 border-b border-t border-black/20">
+            <div className="flex items-center gap-2 w-full bg-background/50 rounded-md px-3 py-1 text-sm">
+              <Lock className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                https://www.google.com
+              </span>
+            </div>
           </div>
           {/* Placeholder for video stream */}
           <div className="w-full h-full flex items-center justify-center bg-grid text-muted-foreground">

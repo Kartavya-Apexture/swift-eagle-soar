@@ -17,9 +17,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const [activeItem, setActiveItem] = React.useState("Chat")
 
   const navItems = [
     { name: "Home", icon: Home },
@@ -64,31 +66,53 @@ export function Sidebar() {
         </div>
         <nav className="flex-grow px-2 py-4">
           <ul className="space-y-2">
-            {navItems.map((item) => (
-              <li key={item.name}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start",
-                        isCollapsed && "justify-center"
-                      )}
-                    >
-                      <item.icon className="h-5 w-5" />
-                      {!isCollapsed && <span className="ml-3">{item.name}</span>}
-                    </Button>
-                  </TooltipTrigger>
-                  {isCollapsed && (
-                    <TooltipContent side="right">
-                      <p>{item.name}</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </li>
-            ))}
+            {navItems.map((item) => {
+              const isActive = activeItem === item.name
+              return (
+                <li key={item.name}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant={isActive ? "secondary" : "ghost"}
+                        className={cn(
+                          "w-full justify-start",
+                          isCollapsed && "justify-center"
+                        )}
+                        onClick={() => setActiveItem(item.name)}
+                      >
+                        <item.icon className="h-5 w-5" />
+                        {!isCollapsed && (
+                          <span className="ml-3">{item.name}</span>
+                        )}
+                      </Button>
+                    </TooltipTrigger>
+                    {isCollapsed && (
+                      <TooltipContent side="right">
+                        <p>{item.name}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </li>
+              )
+            })}
           </ul>
         </nav>
+        <div className="mt-auto p-4 border-t">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            {!isCollapsed && (
+              <div>
+                <p className="text-sm font-medium">Shadcn</p>
+                <p className="text-xs text-muted-foreground">
+                  shadcn@example.com
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </TooltipProvider>
   )
