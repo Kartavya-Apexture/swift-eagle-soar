@@ -1,0 +1,301 @@
+"use client"
+
+import * as React from "react"
+import { Button } from "@/components/ui/button"
+import { ArrowUp, User, Bot, Terminal, Paperclip } from "lucide-react"
+import { type Message } from "@/types"
+import { cn } from "@/lib/utils"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Icons } from "@/components/icons"
+import TextareaAutosize from "react-textarea-autosize"
+
+interface MainChatProps {
+  messages: Message[]
+  onSendMessage: (content: string) => void
+  isThinking: boolean
+}
+
+const AgentMessageContent = ({ content }: { content: string }) => {
+  const parts = content.split(/(".*?")/g).filter(Boolean)
+
+  return (
+    <p className="text-sm whitespace-pre-wrap">
+      {parts.map((part, i) =>
+        part.startsWith('"') && part.endsWith('"') ? (
+          <span
+            key={i}
+            className="block bg-background/50 border-l-2 border-primary pl-2 py-1 my-2 italic"
+          >
+            {part.slice(1, -1)}
+          </span>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </p>
+  )
+}
+
+const AgentMessageBlock = ({ messages: blockMessages }: { messages: Message[] }) => {
+  return (
+    <div className="flex items-start gap-3">
+      <Avatar className="h-8 w-8">
+        <AvatarFallback>
+          <Bot className="h-5 w-5" />
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex flex-col gap-2 w-full max-w-md">
+        {(() => {
+          const blockElements = []
+          let k = 0
+          while (k < blockMessages.length) {
+            const msg = blockMessages[k]
+            if (msg.type === "agent") {
+              blockElements.push(
+                <div key={msg.id} className="p-3 rounded-xl bg-muted">
+                  <AgentMessageContent content={msg.content} />
+                </div>
+              )
+              k++
+            } else if (msg.type === "system") {
+              const systemGroup = []
+              let l = k
+              while (l < blockMessages.length && blockMessages[l].type === "system") {
+                systemGroup.push(blockMessages[l])
+                l++
+              }
+              blockElements.push(
+                <div key={msg.id} className="my-2 p-3 border rounded-lg bg-background/50">
+                  <div className="flex items-center gap-2 text-sm font-semibold mb-2 text-muted-foreground">
+                    <Terminal className="h-4 w-4" />
+                    <span>Agent Actions</span>
+                  </div>
+                  <div className="pl-2 space-y-1 border-l">
+                    {systemGroup.map((sysMsg) => (
+                      <div
+                        key={sysMsg.id}
+                        className="flex items-center gap-2 text-xs font-mono text-muted-foreground"
+                      >
+                        <span>{sysMsg.content}</span>
+                        <span className="italic">({sysMsg.timestamp})</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+              k = l
+            } else {
+              k++
+            }
+          }
+          return blockElements
+        })()}
+      </div>
+    </div>
+  )
+}
+
+export function MainChat({
+  messages,
+  onSendMessage,
+  isThinking,
+}: MainChatProps) {
+  const [input, setInput] = React.useState("")
+  const messagesEndRef = React.useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  React.useEffect(() => {
+    scrollToBottom()
+  }, [messages, isThinking])
+
+  const handleSend = () => {
+    if (input.trim()) {
+      onSendMessage(input)
+      setInput("")
+    }
+  }
+
+  const handleExamplePrompt = (prompt: string) => {
+    setInput(prompt)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      handleSend()
+    }
+  }
+
+  const chatHasStarted = messages.length > 1
+
+  if (!chatHasStarted) {
+    const examplePrompts = [
+      "Find the best flights from SFO to LAX for next weekend",
+      "Summarize the latest news on AI",
+      "What was the score of the last Lakers game?",
+      "Create a recipe for a vegan chocolate cake",
+    ]
+
+    return (
+      <div className="flex-1 flex flex-col justify-end p-8 h-full">
+        <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-8">
+          <div className="flex items-center gap-4">
+            <Icons.logo className="h-12 w-12" />
+            <h1 className="text-4xl font-bold">Agent Mode</h1>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 w-full">
+            {examplePrompts.map((prompt) => (
+              <Button
+                key={prompt}
+                variant="outline"
+                className="text-left justify-start h-auto whitespace-normal"
+                onClick={() => handleExamplePrompt(prompt)}
+              >
+                {prompt}
+              </Button>
+            ))}
+          </div>
+          <div className="w-full rounded-xl border bg-background shadow-lg p-2 flex flex-col mt-4">
+            <TextareaAutosize
+              rows={1}
+              placeholder="Ask anything..."
+              className="w-full resize-none bg-transparent px-4 py-3 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              minRows={1}
+              maxRows={5}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <Paperclip className="h-5 w-5 text-muted-foreground" />
+              </Button>
+              <Button
+                type="submit"
+                size="icon"
+                className="h-9 w-9 rounded-full"
+                onClick={handleSend}
+                disabled={!input.trim()}
+              >
+                <ArrowUp className="h-5 w-5" />
+                <span className="sr-only">Send message</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const renderMessages = () => {
+    const renderedElements = []
+    let i = 0
+    while (i < messages.length) {
+      const message = messages[i]
+
+      if (i === 0 && message.type === "system") {
+        i++
+        continue
+      }
+
+      if (message.type === "user") {
+        renderedElements.push(
+          <div key={message.id} className="flex items-start gap-3 justify-end">
+            <div className="p-3 rounded-xl max-w-md bg-primary text-primary-foreground">
+              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+            </div>
+            <Avatar className="h-8 w-8">
+              <AvatarFallback>
+                <User className="h-5 w-5" />
+              </AvatarFallback>
+            </Avatar>
+          </div>
+        )
+        i++
+      } else if (message.type === "agent" || message.type === "system") {
+        const agentBlockMessages = []
+        let j = i
+        while (j < messages.length && messages[j].type !== "user") {
+          agentBlockMessages.push(messages[j])
+          j++
+        }
+        renderedElements.push(
+          <AgentMessageBlock key={message.id} messages={agentBlockMessages} />
+        )
+        i = j
+      } else {
+        i++
+      }
+    }
+    return renderedElements
+  }
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      <ScrollArea className="flex-1">
+        <div className="h-full flex flex-col justify-end px-4">
+          <div className="flex flex-col gap-4 py-8">
+            {renderMessages()}
+            {isThinking && (
+              <div className="flex items-start gap-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>
+                    <Bot className="h-5 w-5" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="p-3 rounded-lg max-w-md bg-muted">
+                  <div className="flex items-center gap-2">
+                    <span className="h-2 w-2 bg-foreground/50 rounded-full animate-pulse [animation-delay:-0.3s]"></span>
+                    <span className="h-2 w-2 bg-foreground/50 rounded-full animate-pulse [animation-delay:-0.15s]"></span>
+                    <span className="h-2 w-2 bg-foreground/50 rounded-full animate-pulse"></span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </div>
+      </ScrollArea>
+
+      <div className="w-full p-4 border-t bg-background">
+        <div className="w-full rounded-xl border bg-muted/30 p-2 flex flex-col">
+          <TextareaAutosize
+            rows={1}
+            placeholder="Ask anything..."
+            className="w-full resize-none bg-transparent px-4 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isThinking}
+            minRows={1}
+            maxRows={5}
+          />
+          <div className="flex items-center justify-between mt-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-full"
+              disabled={isThinking}
+            >
+              <Paperclip className="h-5 w-5 text-muted-foreground" />
+            </Button>
+            <Button
+              type="submit"
+              size="icon"
+              className="h-9 w-9 rounded-full"
+              onClick={handleSend}
+              disabled={!input.trim() || isThinking}
+            >
+              <ArrowUp className="h-5 w-5" />
+              <span className="sr-only">Send message</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
