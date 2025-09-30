@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import {
   ChevronLeft,
-  Home,
   Settings,
   MessageSquare,
   LayoutGrid,
@@ -20,12 +21,12 @@ import {
 
 export function Sidebar() {
   const [isCollapsed, setIsCollapsed] = React.useState(false)
+  const pathname = usePathname()
 
   const navItems = [
-    { name: "Home", icon: Home },
-    { name: "Dashboard", icon: LayoutGrid },
-    { name: "Chat", icon: MessageSquare },
-    { name: "Settings", icon: Settings },
+    { name: "Dashboard", href: "/", icon: LayoutGrid },
+    { name: "Chat", href: "/chat", icon: MessageSquare },
+    { name: "Settings", href: "/settings", icon: Settings },
   ]
 
   return (
@@ -69,14 +70,19 @@ export function Sidebar() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="ghost"
+                      asChild
+                      variant={pathname === item.href ? "secondary" : "ghost"}
                       className={cn(
                         "w-full justify-start",
                         isCollapsed && "justify-center"
                       )}
                     >
-                      <item.icon className="h-5 w-5" />
-                      {!isCollapsed && <span className="ml-3">{item.name}</span>}
+                      <Link href={item.href}>
+                        <item.icon className="h-5 w-5" />
+                        {!isCollapsed && (
+                          <span className="ml-3">{item.name}</span>
+                        )}
+                      </Link>
                     </Button>
                   </TooltipTrigger>
                   {isCollapsed && (
