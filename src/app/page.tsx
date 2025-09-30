@@ -1,3 +1,5 @@
+"use client"
+
 import { StatCard } from "@/components/stat-card"
 import { Users, Bot, Megaphone, Target } from "lucide-react"
 
