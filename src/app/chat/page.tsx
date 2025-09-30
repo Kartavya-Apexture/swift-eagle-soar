@@ -3,122 +3,31 @@
 import * as React from "react"
 import { MainChat } from "@/components/main-chat"
 import { LiveBrowser } from "@/components/live-browser"
-import { type Message } from "@/types"
-import { format } from "date-fns"
-
-const initialMessages: Message[] = [
-  {
-    id: crypto.randomUUID(),
-    type: "system",
-    content: "Agent session started",
-    timestamp: format(new Date(), "HH:mm"),
-  },
-]
+import { useChat } from "@/hooks/use-chat"
 
 export default function ChatPage() {
-  const [messages, setMessages] = React.useState<Message[]>(initialMessages)
-  const [isThinking, setIsThinking] = React.useState(false)
+  const { messages, isThinking, sendMessage } = useChat()
   const [showBrowser, setShowBrowser] = React.useState(false)
 
-  const addMessage = (message: Message) => {
-    setMessages((prev) => [...prev, message])
+  const handleSendMessage = (content: string) => {
+    // The useChat hook handles the async logic
+    sendMessage(content)
   }
 
-  const sendMessage = (content: string) => {
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      type: "user",
-      content,
-      timestamp: format(new Date(), "HH:mm"),
+  // This effect will sync the browser's visibility with the agent's "thinking" state.
+  React.useEffect(() => {
+    // We only want to show the browser if a conversation is active.
+    if (messages.length > 1) {
+      setShowBrowser(isThinking)
     }
-    addMessage(userMessage)
-    setIsThinking(true)
-    setShowBrowser(true) // Show browser when agent starts working
-
-    // Simulate agent actions and response over 60 seconds
-    setTimeout(() => {
-      const agentGreeting: Message = {
-        id: crypto.randomUUID(),
-        type: "agent",
-        content: `Hello! I can help with that. I'll start by looking for "${content}".`,
-        timestamp: format(new Date(), "HH:mm"),
-      }
-      addMessage(agentGreeting)
-    }, 1000)
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        type: "system",
-        content: `Navigated to google.com`,
-        timestamp: format(new Date(), "HH:mm"),
-      })
-    }, 5000)
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        type: "system",
-        content: `Typed "${content}" into the search bar`,
-        timestamp: format(new Date(), "HH:mm"),
-      })
-    }, 10000)
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        type: "system",
-        content: `Analyzing search results...`,
-        timestamp: format(new Date(), "HH:mm"),
-      })
-    }, 15000)
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        type: "system",
-        content: `Clicked on the first link.`,
-        timestamp: format(new Date(), "HH:mm"),
-      })
-    }, 25000)
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        type: "system",
-        content: `Scrolling down the page to find relevant information.`,
-        timestamp: format(new Date(), "HH:mm"),
-      })
-    }, 35000)
-
-    setTimeout(() => {
-      addMessage({
-        id: crypto.randomUUID(),
-        type: "system",
-        content: `Extracting key details from the page.`,
-        timestamp: format(new Date(), "HH:mm"),
-      })
-    }, 45000)
-
-    setTimeout(() => {
-      const agentMessage: Message = {
-        id: crypto.randomUUID(),
-        type: "agent",
-        content: `Session Timeout. The browser session is now closed.`,
-        timestamp: format(new Date(), "HH:mm"),
-      }
-      addMessage(agentMessage)
-      setIsThinking(false)
-      setShowBrowser(false) // Hide browser when agent is finished
-    }, 60000)
-  }
+  }, [isThinking, messages.length])
 
   return (
     <div className="flex-1 flex flex-row border-x h-full">
       <div className="flex-1 flex flex-col">
         <MainChat
           messages={messages}
-          onSendMessage={sendMessage}
+          onSendMessage={handleSendMessage}
           isThinking={isThinking}
         />
       </div>
