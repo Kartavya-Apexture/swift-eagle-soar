@@ -43,30 +43,35 @@ const campaignData = [
 
 const recentTasks = [
   {
+    id: "task_1",
     agent: "Agent A",
     task: "Summarize Q2 earnings report",
     status: "Completed",
     date: "2024-06-28",
   },
   {
+    id: "task_2",
     agent: "Agent B",
     task: "Generate leads for new campaign",
     status: "Completed",
     date: "2024-06-28",
   },
   {
+    id: "task_3",
     agent: "Agent C",
     task: "Analyze competitor website",
     status: "In Progress",
     date: "2024-06-28",
   },
   {
+    id: "task_4",
     agent: "Agent D",
     task: "Draft social media posts",
     status: "Completed",
     date: "2024-06-27",
   },
   {
+    id: "task_5",
     agent: "Agent A",
     task: "Research market trends",
     status: "Failed",
@@ -218,8 +223,8 @@ export default function DashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recentTasks.map((task, index) => (
-                <TableRow key={index}>
+              {recentTasks.map((task) => (
+                <TableRow key={task.id}>
                   <TableCell className="font-medium">{task.agent}</TableCell>
                   <TableCell>{task.task}</TableCell>
                   <TableCell>
