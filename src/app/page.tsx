@@ -11,6 +11,15 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
@@ -30,6 +39,39 @@ const campaignData = [
   { month: "April", campaigns: 4 },
   { month: "May", campaigns: 3 },
   { month: "June", campaigns: 5 },
+]
+
+const recentTasks = [
+  {
+    agent: "Agent A",
+    task: "Summarize Q2 earnings report",
+    status: "Completed",
+    date: "2024-06-28",
+  },
+  {
+    agent: "Agent B",
+    task: "Generate leads for new campaign",
+    status: "Completed",
+    date: "2024-06-28",
+  },
+  {
+    agent: "Agent C",
+    task: "Analyze competitor website",
+    status: "In Progress",
+    date: "2024-06-28",
+  },
+  {
+    agent: "Agent D",
+    task: "Draft social media posts",
+    status: "Completed",
+    date: "2024-06-27",
+  },
+  {
+    agent: "Agent A",
+    task: "Research market trends",
+    status: "Failed",
+    date: "2024-06-27",
+  },
 ]
 
 export default function DashboardPage() {
@@ -158,6 +200,48 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Tasks</CardTitle>
+          <CardDescription>
+            A list of the most recent tasks performed by agents.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Agent</TableHead>
+                <TableHead>Task</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentTasks.map((task, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{task.agent}</TableCell>
+                  <TableCell>{task.task}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        task.status === "Completed"
+                          ? "default"
+                          : task.status === "In Progress"
+                          ? "secondary"
+                          : "destructive"
+                      }
+                    >
+                      {task.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{task.date}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   )
 }
